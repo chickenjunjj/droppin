@@ -27,7 +27,7 @@ const LoginScreen = () => {
       .catch((error) => {
         const errorCode = error.code;
         const errorMessage = error.message;
-        console.log(errorMessage);
+        console.error(errorMessage);
       });
   };
   return (

@@ -57,7 +57,7 @@ const CreateEventScreen = () => {
   };
   const handleDone = () => {
     if (!checkCompleted()) {
-      console.log("error");
+      console.error("error");
       return;
     }
     const event = {
@@ -186,10 +186,9 @@ const CreateEventScreen = () => {
           >
             <GooglePlacesAutocomplete
               placeholder="Search"
-              onPress={(data, details = null) => {
-                console.log(data);
-                setLocation(data.structured_formatting.main_text);
-              }}
+              onPress={(data, details = null) =>
+                setLocation(data.structured_formatting.main_text)
+              }
               query={{
                 key: GOOGLE_MAPS_API_KEY,
                 language: "en",

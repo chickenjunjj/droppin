@@ -11,7 +11,6 @@ const AppProvider = ({ children }) => {
     const unsubEvents = onSnapshot(collection(db, "events"), (snap) => {
       const newEvents = snap.docs.map((doc) => {
         const curEvent = doc.data();
-        console.log();
         return {
           ...curEvent,
           startDate: new Date(
@@ -19,6 +18,7 @@ const AppProvider = ({ children }) => {
           ).toLocaleString(),
           endDate: new Date(curEvent.endDate.seconds * 1000).toLocaleString(),
           location: curEvent.location,
+          id: doc.id,
         };
       });
       setEvents(newEvents);

@@ -19,7 +19,6 @@ const RegisterScreen = () => {
   const [confirmPass, setConfirmPass] = useState("");
 
   const handleRegister = () => {
-    console.log(password);
     createUserWithEmailAndPassword(auth, email, password)
       .then((userCredential) => {
         // Signed in

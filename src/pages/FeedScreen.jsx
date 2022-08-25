@@ -5,17 +5,23 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import React from "react";
+import React, { useState } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
 import colors from "../styles/colors";
 import { useNavigation } from "@react-navigation/native";
 import { FontAwesome5 } from "@expo/vector-icons";
 import { useGlobalContext } from "../utils/context";
+import DateTimePicker from "@react-native-community/datetimepicker";
 
 const FeedScreen = () => {
   const navigation = useNavigation();
   const { events } = useGlobalContext();
-  console.log(events);
+
+  const [showFilterDatePicker, setShowFilterDatePicker] = useState(false);
+  const [filterDate, setFilterDate] = useState(new Date());
+
+  const [filterDateText, setFilterDateText] = useState("Date");
+
   return (
     <SafeAreaView style={styles.page}>
       <View style={styles.topLine}>
@@ -27,22 +33,41 @@ const FeedScreen = () => {
           <FontAwesome5 name="plus" size={22} color={colors.primary} />
         </TouchableOpacity>
       </View>
-      <View>
-        <ScrollView horizontal={true} showsHorizontalScrollIndicator={false}>
-          <TouchableOpacity style={[styles.filter, styles.firstFilter]}>
-            <Text style={styles.filterText}>Sport</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.filter}>
-            <Text style={styles.filterText}>From Date</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.filter}>
-            <Text style={styles.filterText}>To Date</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.filter}>
-            <Text style={styles.filterText}>Location</Text>
-          </TouchableOpacity>
-        </ScrollView>
+      <View style={styles.filterContainer}>
+        <TouchableOpacity style={styles.filter}>
+          <Text style={styles.filterText}>Sport</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          onPress={() => setShowFilterDatePicker(!showFilterDatePicker)}
+          style={[styles.filter, showFilterDatePicker && styles.filterSelected]}
+        >
+          <Text
+            style={[
+              styles.filterText,
+              showFilterDatePicker && styles.filterTextSelected,
+            ]}
+          >
+            {filterDateText}
+          </Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.filter}>
+          <Text style={styles.filterText}>Location</Text>
+        </TouchableOpacity>
       </View>
+      {showFilterDatePicker && (
+        <DateTimePicker
+          value={filterDate}
+          onChange={(event, date) => {
+            setFilterDate(date);
+            setShowFilterDatePicker(false);
+            setFilterDateText(date.toISOString().split("T")[0]);
+          }}
+          mode="date"
+          display="inline"
+          themeVariant="light"
+          style={styles.dateTime}
+        />
+      )}
       <ScrollView>
         {events.map((event) => (
           <View key={event.id}>
@@ -112,7 +137,6 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
   },
-  firstFilter: { marginLeft: 30 },
   filter: {
     width: 100,
     borderWidth: 2,
@@ -123,7 +147,10 @@ const styles = StyleSheet.create({
     marginHorizontal: 5,
     marginVertical: 10,
   },
+  filterSelected: { borderColor: colors.primary },
   filterText: { color: colors.darkGray },
+  filterTextSelected: { color: colors.primary },
+  filterContainer: { flexDirection: "row", marginHorizontal: 20 },
   eventContainer: { marginTop: 20, marginHorizontal: 25 },
   infoContainer: { flexDirection: "row" },
   infoColumn: { flex: 1 },

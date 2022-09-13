@@ -1,6 +1,5 @@
 import {
   Keyboard,
-  KeyboardAvoidingView,
   SafeAreaView,
   ScrollView,
   StyleSheet,
@@ -21,17 +20,26 @@ import { addDoc, collection } from "firebase/firestore";
 import { db } from "../utils/firebase";
 import { useNavigation } from "@react-navigation/native";
 
+const SPORTS = [
+  "Football",
+  "Basketball",
+  "Tennis",
+  "Cricket",
+  "Baseball",
+  "Rugby",
+  "Volleyball",
+  "Hockey",
+  "Badminton",
+];
+
 const CreateEventScreen = () => {
   const navigation = useNavigation();
 
   const [eventName, setEventName] = useState("");
 
   const [open, setOpen] = useState(false);
-  const [sport, setSport] = useState(null);
-  const [items, setItems] = useState([
-    { label: "Volleyball", value: "volleyball" },
-    { label: "Basketball", value: "basketball" },
-  ]);
+  const [showFilterSportPicker, setShowFilterSportPicker] = useState(false);
+  const [sport, setSport] = useState("Sport");
 
   const [startDate, setStartDate] = useState(new Date());
   const [endDate, setEndDate] = useState(new Date());
@@ -48,7 +56,7 @@ const CreateEventScreen = () => {
 
   const checkCompleted = () => {
     if (eventName === "") return false;
-    if (sport === null) return false;
+    if (sport === "Sport") return false;
     if (showStartDatePlaceholder === true) return false;
     if (showEndDatePlaceholder === true) return false;
     if (spots === "") return false;
@@ -79,6 +87,7 @@ const CreateEventScreen = () => {
         setOpen(false);
         setShowStartDatePicker(false);
         setShowEndDatePicker(false);
+        setShowFilterSportPicker(false);
       }}
     >
       <SafeAreaView style={styles.container}>
@@ -96,25 +105,48 @@ const CreateEventScreen = () => {
             placeholderTextColor={colors.darkGray}
             style={styles.input}
           />
-          <DropDownPicker
-            open={open}
-            value={sport}
-            items={items}
-            setOpen={setOpen}
-            setValue={setSport}
-            setItems={setItems}
-            dropDownDirection="BOTTOM"
-            bottomOffset={1000}
-            placeholder="Sport"
-            placeholderStyle={styles.placeholder}
-            listMode="SCROLLVIEW"
-            style={styles.dropdown}
-            dropDownContainerStyle={styles.dropdownContainer}
-            textStyle={{
-              fontSize: 20,
-              borderWidth: 0,
+          <TouchableOpacity
+            onPress={() => {
+              setShowFilterSportPicker(!showFilterSportPicker);
             }}
-          />
+            style={[styles.input, sport != "Sport" && styles.filterSelected]}
+          >
+            <Text
+              numberOfLines={1}
+              style={[
+                styles.filterText,
+                sport != "Sport" && { color: "black" },
+              ]}
+            >
+              {sport}
+            </Text>
+          </TouchableOpacity>
+          {showFilterSportPicker && (
+            <View style={styles.sportFilter}>
+              {SPORTS.map((sports) => (
+                <TouchableOpacity
+                  onPress={() => {
+                    setSport(sports);
+                    setShowFilterSportPicker(false);
+                  }}
+                  key={sports}
+                  style={[
+                    styles.sportFilterItem,
+                    sports == sport && styles.filterSelected,
+                  ]}
+                >
+                  <Text
+                    style={[
+                      styles.sportFilterText,
+                      sports == sport && styles.filterTextSelected,
+                    ]}
+                  >
+                    {sports}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+          )}
           <TouchableOpacity
             style={styles.input}
             onPress={() => {
@@ -194,10 +226,8 @@ const CreateEventScreen = () => {
                 language: "en",
               }}
               styles={{
-                textInput: [
-                  styles.input,
-                  { marginBottom: 0, fontSize: 20, height: "auto" },
-                ],
+                textInput: [styles.input, { marginBottom: 0, height: "auto" }],
+
                 listView: { height: 150 },
               }}
               textInputProps={{ placeholderTextColor: colors.darkGray }}
@@ -244,6 +274,26 @@ const styles = StyleSheet.create({
     paddingHorizontal: 15,
     color: colors.darkGray,
   },
+  filterText: { color: colors.darkGray, fontSize: 20 },
+  sportFilter: {
+    flexDirection: "row",
+    marginHorizontal: 0,
+    marginTop: 10,
+    flexWrap: "wrap",
+    justifyContent: "space-between",
+  },
+  sportFilterItem: {
+    width: "30%",
+    borderWidth: 2,
+    alignItems: "center",
+    marginVertical: 5,
+    borderRadius: 5,
+    borderColor: colors.blackGray,
+    paddingVertical: 5,
+  },
+  filterSelected: { borderColor: colors.primary },
+  sportFilterText: { color: colors.blackGray },
+  filterTextSelected: { color: colors.primary },
   dropdownContainer: {
     backgroundColor: colors.lightGray,
     borderWidth: 1,

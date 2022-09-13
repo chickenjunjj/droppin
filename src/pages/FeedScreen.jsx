@@ -12,15 +12,35 @@ import { useNavigation } from "@react-navigation/native";
 import { FontAwesome5 } from "@expo/vector-icons";
 import { useGlobalContext } from "../utils/context";
 import DateTimePicker from "@react-native-community/datetimepicker";
+import { GooglePlacesAutocomplete } from "react-native-google-places-autocomplete";
+import GOOGLE_MAPS_API_KEY from "../utils/googleMapsAPIKey";
+
+const SPORTS = [
+  "Football",
+  "Basketball",
+  "Tennis",
+  "Cricket",
+  "Baseball",
+  "Rugby",
+  "Volleyball",
+  "Hockey",
+  "Badminton",
+];
 
 const FeedScreen = () => {
   const navigation = useNavigation();
   const { events } = useGlobalContext();
 
+  const [showFilterSportPicker, setShowFilterSportPicker] = useState(false);
+  const [filterSport, setFilterSport] = useState("Sport");
+
   const [showFilterDatePicker, setShowFilterDatePicker] = useState(false);
   const [filterDate, setFilterDate] = useState(new Date());
-
   const [filterDateText, setFilterDateText] = useState("Date");
+
+  const [showFilterLocationPicker, setShowFilterLocationPicker] =
+    useState(false);
+  const [filterLocation, setFilterLocation] = useState("Location");
 
   return (
     <SafeAreaView style={styles.page}>
@@ -34,26 +54,97 @@ const FeedScreen = () => {
         </TouchableOpacity>
       </View>
       <View style={styles.filterContainer}>
-        <TouchableOpacity style={styles.filter}>
-          <Text style={styles.filterText}>Sport</Text>
-        </TouchableOpacity>
         <TouchableOpacity
-          onPress={() => setShowFilterDatePicker(!showFilterDatePicker)}
-          style={[styles.filter, showFilterDatePicker && styles.filterSelected]}
+          onPress={() => {
+            setShowFilterSportPicker(!showFilterSportPicker);
+            setShowFilterDatePicker(false);
+            setShowFilterLocationPicker(false);
+          }}
+          style={[
+            styles.filter,
+            filterSport != "Sport" && styles.filterSelected,
+          ]}
         >
           <Text
+            numberOfLines={1}
             style={[
               styles.filterText,
-              showFilterDatePicker && styles.filterTextSelected,
+              filterSport != "Sport" && styles.filterTextSelected,
+            ]}
+          >
+            {filterSport}
+          </Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          onPress={() => {
+            setShowFilterDatePicker(!showFilterDatePicker);
+            setShowFilterSportPicker(false);
+            setShowFilterLocationPicker(false);
+          }}
+          style={[
+            styles.filter,
+            filterDateText != "Date" && styles.filterSelected,
+          ]}
+        >
+          <Text
+            numberOfLines={1}
+            style={[
+              styles.filterText,
+              filterDateText != "Date" && styles.filterTextSelected,
             ]}
           >
             {filterDateText}
           </Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.filter}>
-          <Text style={styles.filterText}>Location</Text>
+        <TouchableOpacity
+          onPress={() => {
+            setShowFilterLocationPicker(!showFilterLocationPicker);
+            setShowFilterSportPicker(false);
+            setShowFilterDatePicker(false);
+          }}
+          style={[
+            styles.filter,
+            filterLocation != "Location" && styles.filterSelected,
+          ]}
+        >
+          <Text
+            numberOfLines={1}
+            style={[
+              styles.filterText,
+              filterLocation != "Location" && styles.filterTextSelected,
+            ]}
+          >
+            {filterLocation}
+          </Text>
         </TouchableOpacity>
       </View>
+      {showFilterSportPicker && (
+        <View style={styles.sportFilter}>
+          {SPORTS.map((sport) => (
+            <TouchableOpacity
+              onPress={() => {
+                setFilterSport(sport);
+                setShowFilterSportPicker(false);
+              }}
+              key={sport}
+              style={[
+                styles.sportFilterItem,
+                sport == filterSport && styles.filterSelected,
+              ]}
+            >
+              <Text
+                style={[
+                  styles.sportFilterText,
+                  sport == filterSport && styles.filterTextSelected,
+                ]}
+              >
+                {sport}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </View>
+      )}
+
       {showFilterDatePicker && (
         <DateTimePicker
           value={filterDate}
@@ -67,6 +158,37 @@ const FeedScreen = () => {
           themeVariant="light"
           style={styles.dateTime}
         />
+      )}
+
+      {showFilterLocationPicker && (
+        <ScrollView
+          horizontal={true}
+          scrollEnabled={false}
+          nestedScrollEnabled={true}
+          keyboardShouldPersistTaps={"handled"}
+          contentContainerStyle={{ width: "100%" }}
+          style={styles.locationContainer}
+        >
+          <GooglePlacesAutocomplete
+            placeholder="Search"
+            onPress={(data, details = null) => [
+              setFilterLocation(data.structured_formatting.main_text),
+              setShowFilterLocationPicker(false),
+            ]}
+            query={{
+              key: GOOGLE_MAPS_API_KEY,
+              language: "en",
+            }}
+            styles={{
+              container: { marginBottom: 10 },
+              textInput: styles.input,
+              listView: { height: 150 },
+            }}
+            textInputProps={{
+              placeholderTextColor: colors.darkGray,
+            }}
+          />
+        </ScrollView>
       )}
       <ScrollView>
         {events.map((event) => (
@@ -118,7 +240,7 @@ const styles = StyleSheet.create({
   page: { flex: 1 },
   topLine: {
     flexDirection: "row",
-    marginHorizontal: 30,
+    marginHorizontal: 25,
     justifyContent: "space-between",
     alignItems: "center",
   },
@@ -137,20 +259,48 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
   },
+  filterContainer: {
+    flexDirection: "row",
+    marginHorizontal: 25,
+    justifyContent: "space-between",
+  },
   filter: {
-    width: 100,
+    width: 115,
     borderWidth: 2,
     borderRadius: 50,
     borderColor: colors.darkGray,
     paddingVertical: 5,
     alignItems: "center",
-    marginHorizontal: 5,
     marginVertical: 10,
   },
   filterSelected: { borderColor: colors.primary },
   filterText: { color: colors.darkGray },
   filterTextSelected: { color: colors.primary },
-  filterContainer: { flexDirection: "row", marginHorizontal: 20 },
+  sportFilter: {
+    flexDirection: "row",
+    marginHorizontal: 25,
+    flexWrap: "wrap",
+    justifyContent: "space-between",
+  },
+  sportFilterItem: {
+    width: "30%",
+    borderWidth: 2,
+    alignItems: "center",
+    marginVertical: 5,
+    borderRadius: 5,
+    borderColor: colors.blackGray,
+    paddingVertical: 5,
+  },
+  sportFilterText: { color: colors.blackGray },
+  locationContainer: { marginHorizontal: 25 },
+  input: {
+    marginBottom: 0,
+    borderRadius: 10,
+    paddingVertical: 13,
+    paddingHorizontal: 15,
+    backgroundColor: colors.lightGray,
+    fontSize: 20,
+  },
   eventContainer: { marginTop: 20, marginHorizontal: 25 },
   infoContainer: { flexDirection: "row" },
   infoColumn: { flex: 1 },

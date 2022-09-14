@@ -5,7 +5,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
 import colors from "../styles/colors";
 import { useNavigation } from "@react-navigation/native";
@@ -29,7 +29,7 @@ const SPORTS = [
 
 const FeedScreen = () => {
   const navigation = useNavigation();
-  const { events } = useGlobalContext();
+  const { events, updateEvents } = useGlobalContext();
 
   const [showFilterSportPicker, setShowFilterSportPicker] = useState(false);
   const [filterSport, setFilterSport] = useState("Sport");
@@ -41,6 +41,10 @@ const FeedScreen = () => {
   const [showFilterLocationPicker, setShowFilterLocationPicker] =
     useState(false);
   const [filterLocation, setFilterLocation] = useState("Location");
+
+  useEffect(() => {
+    updateEvents(filterSport, filterDate, filterDateText, filterLocation);
+  }, [filterSport, filterDate, filterDateText, filterLocation]);
 
   return (
     <SafeAreaView style={styles.page}>
@@ -151,8 +155,13 @@ const FeedScreen = () => {
           onChange={(event, date) => {
             setFilterDate(date);
             setShowFilterDatePicker(false);
-            setFilterDateText(date.toISOString().split("T")[0]);
+            setFilterDateText(
+              new Date(date.getTime() - date.getTimezoneOffset() * 60 * 1000)
+                .toISOString()
+                .split("T")[0]
+            );
           }}
+          minimumDate={new Date()}
           mode="date"
           display="inline"
           themeVariant="light"

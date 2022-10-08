@@ -11,7 +11,6 @@ import {
 } from "react-native";
 import React, { useState } from "react";
 import colors from "../styles/colors";
-import DropDownPicker from "react-native-dropdown-picker";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { GooglePlacesAutocomplete } from "react-native-google-places-autocomplete";
 import GOOGLE_MAPS_API_KEY from "../utils/googleMapsAPIKey";
@@ -19,6 +18,7 @@ import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view
 import { addDoc, collection } from "firebase/firestore";
 import { db } from "../utils/firebase";
 import { useNavigation } from "@react-navigation/native";
+import Geocoder from "react-native-geocoding";
 
 const SPORTS = [
   "Football",
@@ -54,6 +54,8 @@ const CreateEventScreen = () => {
 
   const [location, setLocation] = useState("");
 
+  const [coordinate, setCoordinate] = useState("");
+
   const checkCompleted = () => {
     if (eventName === "") return false;
     if (sport === "Sport") return false;
@@ -75,6 +77,7 @@ const CreateEventScreen = () => {
       endDate,
       spots,
       location,
+      coordinate,
     };
     addDoc(collection(db, "events"), event);
     navigation.navigate("Feed");
@@ -217,17 +220,19 @@ const CreateEventScreen = () => {
             contentContainerStyle={{ width: "100%" }}
           >
             <GooglePlacesAutocomplete
-              placeholder="Search"
-              onPress={(data, details = null) =>
-                setLocation(data.structured_formatting.main_text)
-              }
+              placeholder="Location"
+              onPress={async (data, details = null) => {
+                const json = await Geocoder.from(data.description);
+                setLocation(data.structured_formatting.main_text);
+                setCoordinate(json.results[0].geometry.location);
+                console.log(json.results[0].geometry.location);
+              }}
               query={{
                 key: GOOGLE_MAPS_API_KEY,
                 language: "en",
               }}
               styles={{
                 textInput: [styles.input, { marginBottom: 0, height: "auto" }],
-
                 listView: { height: 150 },
               }}
               textInputProps={{ placeholderTextColor: colors.darkGray }}

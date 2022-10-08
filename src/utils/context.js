@@ -7,11 +7,14 @@ import {
 } from "firebase/firestore";
 import { createContext, useContext, useEffect, useState } from "react";
 import { db } from "./firebase";
+import Geocoder from "react-native-geocoding";
+import GOOGLE_MAPS_API_KEY from "./googleMapsAPIKey";
 
 const AppContext = createContext();
 
 const AppProvider = ({ children }) => {
   const [events, setEvents] = useState([]);
+  Geocoder.init(GOOGLE_MAPS_API_KEY);
 
   useEffect(() => {
     const unsubEvents = onSnapshot(
@@ -19,6 +22,9 @@ const AppProvider = ({ children }) => {
       (snap) => {
         const newEvents = snap.docs.map((doc) => {
           const curEvent = doc.data();
+          Geocoder.from(curEvent.location).then((json) => {
+            console.log(json);
+          });
           return {
             ...curEvent,
             startDate: new Date(
@@ -26,6 +32,12 @@ const AppProvider = ({ children }) => {
             ).toLocaleString(),
             endDate: new Date(curEvent.endDate.seconds * 1000).toLocaleString(),
             location: curEvent.location,
+            coordinate: {
+              latitude: curEvent.coordinate.lat,
+              longitude: curEvent.coordinate.lng,
+              latitudeDelta: 0.009,
+              longitudeDelta: 0.005,
+            },
             id: doc.id,
           };
         });

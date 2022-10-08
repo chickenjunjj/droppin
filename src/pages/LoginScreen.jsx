@@ -16,18 +16,20 @@ const LoginScreen = () => {
   const navigation = useNavigation();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [errorMessage, setErrorMessage] = useState(false);
 
   const handleLogin = () => {
     signInWithEmailAndPassword(auth, email, password)
       .then((userCredential) => {
         // Signed in
         const user = userCredential.user;
+        setErrorMessage(false);
         navigation.navigate("Feed");
       })
       .catch((error) => {
         const errorCode = error.code;
         const errorMessage = error.message;
-        console.error(errorMessage);
+        setErrorMessage(true);
       });
   };
   return (
@@ -50,6 +52,7 @@ const LoginScreen = () => {
         secureTextEntry={true}
         style={styles.input}
       />
+      {errorMessage && <Text style={styles.errorMes}>Invalid details</Text>}
       <TouchableOpacity style={styles.button} onPress={handleLogin}>
         <Text style={styles.buttonText}>Login</Text>
       </TouchableOpacity>
@@ -77,6 +80,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     borderColor: colors.darkGray,
   },
+  errorMes: { marginTop: 10, alignContent: "center", color: colors.primary },
   button: {
     marginTop: "auto",
     backgroundColor: "black",

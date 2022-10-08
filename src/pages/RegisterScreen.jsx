@@ -17,19 +17,24 @@ const RegisterScreen = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPass, setConfirmPass] = useState("");
+  const [errorMessage, setErrorMessage] = useState(false);
 
   const handleRegister = () => {
-    createUserWithEmailAndPassword(auth, email, password)
-      .then((userCredential) => {
-        // Signed in
-        const user = userCredential.user;
-        navigation.navigate("Feed");
-      })
-      .catch((error) => {
-        const errorCode = error.code;
-        const errorMessage = error.message;
-        // ..
-      });
+    if (password === confirmPass) {
+      createUserWithEmailAndPassword(auth, email, password)
+        .then((userCredential) => {
+          // Signed in
+          const user = userCredential.user;
+          navigation.navigate("Feed");
+        })
+        .catch((error) => {
+          const errorCode = error.code;
+          const errorMessage = error.message;
+          // ..
+        });
+    } else {
+      setErrorMessage(true);
+    }
   };
 
   return (
@@ -60,6 +65,9 @@ const RegisterScreen = () => {
         secureTextEntry={true}
         style={styles.input}
       />
+      {errorMessage && (
+        <Text style={styles.errorMes}>Password not consistent</Text>
+      )}
       <TouchableOpacity style={styles.button} onPress={handleRegister}>
         <Text style={styles.buttonText}>Register</Text>
       </TouchableOpacity>
@@ -87,6 +95,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     borderColor: colors.darkGray,
   },
+  errorMes: { marginTop: 10, alignContent: "center", color: colors.primary },
   button: {
     marginTop: "auto",
     backgroundColor: "black",

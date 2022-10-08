@@ -14,6 +14,7 @@ import { useGlobalContext } from "../utils/context";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { GooglePlacesAutocomplete } from "react-native-google-places-autocomplete";
 import GOOGLE_MAPS_API_KEY from "../utils/googleMapsAPIKey";
+import MapView, { Marker } from "react-native-maps";
 
 const SPORTS = [
   "Football",
@@ -63,6 +64,7 @@ const FeedScreen = () => {
             setShowFilterSportPicker(!showFilterSportPicker);
             setShowFilterDatePicker(false);
             setShowFilterLocationPicker(false);
+            setFilterSport("Sport");
           }}
           style={[
             styles.filter,
@@ -84,6 +86,8 @@ const FeedScreen = () => {
             setShowFilterDatePicker(!showFilterDatePicker);
             setShowFilterSportPicker(false);
             setShowFilterLocationPicker(false);
+            setFilterDateText("Date");
+            setFilterDate(new Date());
           }}
           style={[
             styles.filter,
@@ -105,6 +109,7 @@ const FeedScreen = () => {
             setShowFilterLocationPicker(!showFilterLocationPicker);
             setShowFilterSportPicker(false);
             setShowFilterDatePicker(false);
+            setFilterLocation("Location");
           }}
           style={[
             styles.filter,
@@ -230,7 +235,9 @@ const FeedScreen = () => {
                   </View>
                 </View>
               </View>
-              <View style={styles.map} />
+              <MapView region={event.coordinate} style={styles.map}>
+                <Marker coordinate={event.coordinate} title={event.location} />
+              </MapView>
               <TouchableOpacity style={styles.button}>
                 <Text style={styles.join}>Join</Text>
               </TouchableOpacity>

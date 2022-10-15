@@ -216,8 +216,8 @@ const FeedScreen = () => {
                     <Text style={styles.data}>{event.sport}</Text>
                   </View>
                   <View>
-                    <Text style={styles.information}>Start</Text>
-                    <Text style={styles.data}>{event.startDate}</Text>
+                    <Text style={styles.information}>Date</Text>
+                    <Text style={styles.data}>{event.date.split(",")[0]}</Text>
                   </View>
                   <View>
                     <Text style={styles.information}>Location</Text>
@@ -230,8 +230,27 @@ const FeedScreen = () => {
                     <Text style={styles.data}>{event.spots}</Text>
                   </View>
                   <View>
-                    <Text style={styles.information}>End</Text>
-                    <Text style={styles.data}>{event.endDate}</Text>
+                    <Text style={styles.information}>Time</Text>
+                    <Text style={styles.data}>
+                      {event.startTime.split(",")[1].split(":")[0]}
+                      {":"}
+                      {event.startTime.split(",")[1].split(":")[1]}{" "}
+                      {event.startTime
+                        .split(",")[1]
+                        .substring(
+                          event.startTime.split(",")[1].length - 2,
+                          event.startTime.split(",")[1].length
+                        )}{" "}
+                      - {event.endTime.split(",")[1].split(":")[0]}
+                      {":"}
+                      {event.endTime.split(",")[1].split(":")[1]}{" "}
+                      {event.endTime
+                        .split(",")[1]
+                        .substring(
+                          event.endTime.split(",")[1].length - 2,
+                          event.endTime.split(",")[1].length
+                        )}
+                    </Text>
                   </View>
                 </View>
               </View>

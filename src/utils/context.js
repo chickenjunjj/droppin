@@ -18,19 +18,20 @@ const AppProvider = ({ children }) => {
 
   useEffect(() => {
     const unsubEvents = onSnapshot(
-      query(collection(db, "events"), where("endDate", ">=", new Date())),
+      query(collection(db, "events"), where("date", ">=", new Date())),
       (snap) => {
         const newEvents = snap.docs.map((doc) => {
           const curEvent = doc.data();
           Geocoder.from(curEvent.location).then((json) => {
-            console.log(json);
+            //console.log(json);
           });
           return {
             ...curEvent,
-            startDate: new Date(
-              curEvent.startDate.seconds * 1000
+            date: new Date(curEvent.date.seconds * 1000).toLocaleString(),
+            startTime: new Date(
+              curEvent.startTime.seconds * 1000
             ).toLocaleString(),
-            endDate: new Date(curEvent.endDate.seconds * 1000).toLocaleString(),
+            endTime: new Date(curEvent.endTime.seconds * 1000).toLocaleString(),
             location: curEvent.location,
             coordinate: {
               latitude: curEvent.coordinate.lat,
@@ -55,10 +56,10 @@ const AppProvider = ({ children }) => {
     const queryParams = [
       sport !== "Sport" && where("sport", "==", sport),
       ...(dateText !== "Date"
-        ? [where("endDate", ">=", dateBegin), where("endDate", "<", dateEnd)]
+        ? [where("date", ">=", dateBegin), where("date", "<", dateEnd)]
         : []),
       location !== "Location" && where("location", "==", location),
-      where("endDate", ">=", new Date()),
+      where("date", ">=", new Date()),
     ].filter((queryParam) => queryParam);
     const q = query(collection(db, "events"), ...queryParams);
     const querySnapshot = await getDocs(q);
@@ -66,9 +67,16 @@ const AppProvider = ({ children }) => {
       const curEvent = doc.data();
       return {
         ...curEvent,
-        startDate: new Date(curEvent.startDate.seconds * 1000).toLocaleString(),
-        endDate: new Date(curEvent.endDate.seconds * 1000).toLocaleString(),
+        date: new Date(curEvent.date.seconds * 1000).toLocaleString(),
+        startTime: new Date(curEvent.startTime.seconds * 1000).toLocaleString(),
+        endTime: new Date(curEvent.endTime.seconds * 1000).toLocaleString(),
         location: curEvent.location,
+        coordinate: {
+          latitude: curEvent.coordinate.lat,
+          longitude: curEvent.coordinate.lng,
+          latitudeDelta: 0.009,
+          longitudeDelta: 0.005,
+        },
         id: doc.id,
       };
     });

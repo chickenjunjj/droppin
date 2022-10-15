@@ -19,6 +19,7 @@ import { addDoc, collection } from "firebase/firestore";
 import { db } from "../utils/firebase";
 import { useNavigation } from "@react-navigation/native";
 import Geocoder from "react-native-geocoding";
+import { FontAwesome5 } from "@expo/vector-icons";
 
 const SPORTS = [
   "Football",
@@ -41,14 +42,17 @@ const CreateEventScreen = () => {
   const [showFilterSportPicker, setShowFilterSportPicker] = useState(false);
   const [sport, setSport] = useState("Sport");
 
-  const [startDate, setStartDate] = useState(new Date());
-  const [endDate, setEndDate] = useState(new Date());
+  const [date, setDate] = useState(new Date());
+  const [startTime, setStartTime] = useState(new Date());
+  const [endTime, setEndTime] = useState(new Date());
 
-  const [showStartDatePicker, setShowStartDatePicker] = useState(false);
-  const [showEndDatePicker, setShowEndDatePicker] = useState(false);
-  const [showStartDatePlaceholder, setShowStartDatePlaceholder] =
+  const [showDatePicker, setShowDatePicker] = useState(false);
+  const [showStartTimePicker, setShowStartTimePicker] = useState(false);
+  const [showEndTimePicker, setShowEndTimePicker] = useState(false);
+  const [showDatePlaceholder, setShowDatePlaceholder] = useState(true);
+  const [showStartTimePlaceholder, setShowStartTimePlaceholder] =
     useState(true);
-  const [showEndDatePlaceholder, setShowEndDatePlaceholder] = useState(true);
+  const [showEndTimePlaceholder, setShowEndTimePlaceholder] = useState(true);
 
   const [spots, setSpots] = useState("");
 
@@ -59,8 +63,7 @@ const CreateEventScreen = () => {
   const checkCompleted = () => {
     if (eventName === "") return false;
     if (sport === "Sport") return false;
-    if (showStartDatePlaceholder === true) return false;
-    if (showEndDatePlaceholder === true) return false;
+    if (showDatePlaceholder === true) return false;
     if (spots === "") return false;
     if (location === "") return false;
     return true;
@@ -73,8 +76,9 @@ const CreateEventScreen = () => {
     const event = {
       eventName,
       sport,
-      startDate,
-      endDate,
+      date,
+      startTime,
+      endTime,
       spots,
       location,
       coordinate,
@@ -88,13 +92,21 @@ const CreateEventScreen = () => {
       onPress={() => {
         Keyboard.dismiss;
         setOpen(false);
-        setShowStartDatePicker(false);
-        setShowEndDatePicker(false);
+        setShowDatePicker(false);
+        setShowEndTimePicker(false);
         setShowFilterSportPicker(false);
       }}
     >
       <SafeAreaView style={styles.container}>
-        <Text style={styles.title}>Create Event</Text>
+        <View
+          style={{ flexDirection: "row", alignItems: "center", marginTop: 20 }}
+        >
+          <TouchableOpacity onPress={navigation.goBack} style={{ padding: 15 }}>
+            <FontAwesome5 name="chevron-left" size={20} />
+          </TouchableOpacity>
+          <Text style={styles.title}>Create Event</Text>
+        </View>
+
         <KeyboardAwareScrollView
           extraScrollHeight={190}
           showsVerticalScrollIndicator={false}
@@ -153,55 +165,108 @@ const CreateEventScreen = () => {
           <TouchableOpacity
             style={styles.input}
             onPress={() => {
-              setShowStartDatePicker(!showStartDatePicker);
-              setShowStartDatePlaceholder(false);
+              setShowDatePicker(!showDatePicker);
+              setShowDatePlaceholder(false);
             }}
           >
             <Text
               style={[
                 styles.placeholder,
-                !showStartDatePlaceholder && { color: "black" },
+                !showDatePlaceholder && { color: "black" },
               ]}
             >
-              {showStartDatePlaceholder
-                ? "Start date"
-                : startDate.toLocaleString()}
+              {showDatePlaceholder
+                ? "Date"
+                : date.toLocaleString().split(",")[0]}
             </Text>
           </TouchableOpacity>
-          {showStartDatePicker && (
+          {showDatePicker && (
             <DateTimePicker
-              value={startDate}
-              onChange={(event, startDate) => setStartDate(startDate)}
-              mode="datetime"
+              value={date}
+              onChange={(event, date) => {
+                setDate(date);
+                setShowDatePicker(false);
+              }}
+              mode="date"
               display="inline"
               themeVariant="light"
-              style={styles.dateTime}
+              minimumDate={new Date()}
+              language="en"
+              style={{ marginTop: 30 }}
             />
           )}
-          <TouchableOpacity
-            style={styles.input}
-            onPress={() => {
-              setShowEndDatePicker(!showEndDatePicker);
-              setShowEndDatePlaceholder(false);
-            }}
-          >
-            <Text
+          <View style={styles.timeContainer}>
+            <TouchableOpacity
+              onPress={() => {
+                setShowStartTimePicker(!showStartTimePicker);
+                setShowStartTimePlaceholder(false);
+                setShowEndTimePicker(false);
+              }}
               style={[
-                styles.placeholder,
-                !showEndDatePlaceholder && { color: "black" },
+                styles.dateTime,
+                !showStartTimePlaceholder && { alignItems: "center" },
               ]}
             >
-              {showEndDatePlaceholder ? "End date" : endDate.toLocaleString()}
-            </Text>
-          </TouchableOpacity>
-          {showEndDatePicker && (
+              <Text
+                style={[
+                  styles.placeholder,
+                  !showStartTimePlaceholder && { color: "black" },
+                ]}
+              >
+                {showStartTimePlaceholder
+                  ? "Start time"
+                  : startTime.getHours() +
+                    ":" +
+                    ((time) => (time < 10 ? "0" + time : time))(
+                      startTime.getMinutes()
+                    )}
+              </Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              onPress={() => {
+                setShowEndTimePicker(!showEndTimePicker);
+                setShowEndTimePlaceholder(false);
+                setShowStartTimePicker(false);
+              }}
+              style={[
+                styles.dateTime,
+                !showEndTimePlaceholder && { alignItems: "center" },
+              ]}
+            >
+              <Text
+                style={[
+                  styles.placeholder,
+                  !showEndTimePlaceholder && { color: "black" },
+                ]}
+              >
+                {showEndTimePlaceholder
+                  ? "End time"
+                  : endTime.getHours() +
+                    ":" +
+                    ((time) => (time < 10 ? "0" + time : time))(
+                      endTime.getMinutes()
+                    )}
+              </Text>
+            </TouchableOpacity>
+          </View>
+          {showStartTimePicker && (
             <DateTimePicker
-              value={endDate}
-              onChange={(event, endDate) => setEndDate(endDate)}
-              mode="datetime"
-              display="inline"
+              value={startTime}
+              onChange={(event, startTime) => setStartTime(startTime)}
+              mode="time"
+              display="spinner"
               themeVariant="light"
-              style={styles.dateTime}
+              style={{}}
+            />
+          )}
+          {showEndTimePicker && (
+            <DateTimePicker
+              value={endTime}
+              onChange={(event, endTime) => setEndTime(endTime)}
+              mode="time"
+              display="spinner"
+              themeVariant="light"
+              style={{}}
             />
           )}
           <TextInput
@@ -255,7 +320,7 @@ const styles = StyleSheet.create({
     fontSize: 30,
     fontWeight: "700",
     color: colors.primary,
-    marginTop: 20,
+    marginLeft: 5,
   },
   input: {
     marginTop: 30,
@@ -305,7 +370,19 @@ const styles = StyleSheet.create({
     borderColor: colors.darkGray,
   },
   startTime: { flexDirection: "row", justifyContent: "space-between" },
-  dateTime: { marginTop: 30 },
+  dateTime: {
+    width: 150,
+    marginTop: 30,
+    borderRadius: 10,
+    paddingVertical: 13,
+    paddingHorizontal: 15,
+    backgroundColor: colors.lightGray,
+    fontSize: 20,
+  },
+  timeContainer: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+  },
   button: {
     backgroundColor: colors.primary,
     alignItems: "center",

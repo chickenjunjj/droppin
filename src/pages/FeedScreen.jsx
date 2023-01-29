@@ -15,6 +15,8 @@ import DateTimePicker from "@react-native-community/datetimepicker";
 import { GooglePlacesAutocomplete } from "react-native-google-places-autocomplete";
 import GOOGLE_MAPS_API_KEY from "../utils/googleMapsAPIKey";
 import MapView, { Marker } from "react-native-maps";
+import { auth, db } from "../utils/firebase";
+import { arrayRemove, arrayUnion, doc, updateDoc } from "firebase/firestore";
 
 const SPORTS = [
   "Football",
@@ -29,8 +31,10 @@ const SPORTS = [
 ];
 
 const FeedScreen = () => {
+  // console.log(auth.currentUser && auth.currentUser.uid);
   const navigation = useNavigation();
-  const { events, updateEvents } = useGlobalContext();
+  const { events, updateEvents, registeredEvents } = useGlobalContext();
+  // console.log(registeredEvents);
 
   const [showFilterSportPicker, setShowFilterSportPicker] = useState(false);
   const [filterSport, setFilterSport] = useState("Sport");
@@ -43,10 +47,31 @@ const FeedScreen = () => {
     useState(false);
   const [filterLocation, setFilterLocation] = useState("Location");
 
+  //When user presses join or leave event
+  const handlePress = (id, spots) => {
+    // console.log(id);
+    let updatedSpots;
+    if (registeredEvents.includes(id)) {
+      //When users leave event
+      updatedSpots = parseInt(spots) + 1;
+      updateDoc(doc(db, "users", auth.currentUser.uid), {
+        registeredEvents: arrayRemove(id),
+      });
+    } else {
+      updatedSpots = parseInt(spots) - 1;
+      updateDoc(doc(db, "users", auth.currentUser.uid), {
+        registeredEvents: arrayUnion(id),
+      });
+    }
+    updateDoc(doc(db, "events", id), { spots: updatedSpots });
+  };
+
+  //Updates when values in array changes
   useEffect(() => {
     updateEvents(filterSport, filterDate, filterDateText, filterLocation);
   }, [filterSport, filterDate, filterDateText, filterLocation]);
 
+  //Visual page
   return (
     <SafeAreaView style={styles.page}>
       <View style={styles.topLine}>
@@ -257,8 +282,13 @@ const FeedScreen = () => {
               <MapView region={event.coordinate} style={styles.map}>
                 <Marker coordinate={event.coordinate} title={event.location} />
               </MapView>
-              <TouchableOpacity style={styles.button}>
-                <Text style={styles.join}>Join</Text>
+              <TouchableOpacity
+                onPress={() => handlePress(event.id, event.spots)}
+                style={styles.button}
+              >
+                <Text style={styles.join}>
+                  {registeredEvents.includes(event.id) ? "Leave" : "Join"}
+                </Text>
               </TouchableOpacity>
             </View>
             <View style={styles.background} />

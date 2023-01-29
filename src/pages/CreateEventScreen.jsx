@@ -79,7 +79,7 @@ const CreateEventScreen = () => {
       date,
       startTime,
       endTime,
-      spots,
+      spots: parseInt(spots),
       location,
       coordinate,
     };
@@ -290,7 +290,7 @@ const CreateEventScreen = () => {
                 const json = await Geocoder.from(data.description);
                 setLocation(data.structured_formatting.main_text);
                 setCoordinate(json.results[0].geometry.location);
-                console.log(json.results[0].geometry.location);
+                // console.log(json.results[0].geometry.location);
               }}
               query={{
                 key: GOOGLE_MAPS_API_KEY,

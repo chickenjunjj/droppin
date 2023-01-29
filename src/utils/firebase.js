@@ -2,6 +2,7 @@ import { initializeApp } from "firebase/app";
 import { getAuth } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
 
+//Configuration for account(google console)
 const firebaseConfig = {
   apiKey: "AIzaSyDDTKC5TtiedENkKwbf7sOA2WQGySbFc9Q",
   authDomain: "csia-ad3e5.firebaseapp.com",

@@ -8,11 +8,14 @@ import {
 } from "react-native";
 import React, { useState } from "react";
 import colors from "../styles/colors";
-import { auth } from "../utils/firebase";
+import { auth, db } from "../utils/firebase";
 import { createUserWithEmailAndPassword } from "firebase/auth";
 import { useNavigation } from "@react-navigation/native";
+import { useGlobalContext } from "../utils/context";
+import { doc, onSnapshot, setDoc } from "firebase/firestore";
 
 const RegisterScreen = () => {
+  const { setRegisteredEvents } = useGlobalContext();
   const navigation = useNavigation();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -21,16 +24,32 @@ const RegisterScreen = () => {
 
   const handleRegister = () => {
     if (password === confirmPass) {
+      //Same as login
       createUserWithEmailAndPassword(auth, email, password)
-        .then((userCredential) => {
+        .then(async (userCredential) => {
           // Signed in
+          //Making new doc for user: Keeps track of registered events
+          await setDoc(doc(db, "users", auth.currentUser.uid), {
+            registeredEvents: [],
+          });
+          //Same as login
+          //unsubscribe to stop listening after app closes(efficiency)
+          const unsubscribe = onSnapshot(
+            doc(db, "users", auth.currentUser.uid),
+            (snap) => {
+              // console.log("hello");
+              setRegisteredEvents(snap.data().registeredEvents);
+            }
+          );
           const user = userCredential.user;
           navigation.navigate("Feed");
         })
         .catch((error) => {
           const errorCode = error.code;
           const errorMessage = error.message;
+          // console.log(errorMessage);
           // ..
+          setErrorMessage(true);
         });
     } else {
       setErrorMessage(true);
@@ -66,7 +85,7 @@ const RegisterScreen = () => {
         style={styles.input}
       />
       {errorMessage && (
-        <Text style={styles.errorMes}>Password not consistent</Text>
+        <Text style={styles.errorMes}>Invalid authentication</Text>
       )}
       <TouchableOpacity style={styles.button} onPress={handleRegister}>
         <Text style={styles.buttonText}>Register</Text>

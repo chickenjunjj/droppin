@@ -9,20 +9,40 @@ import {
 import React, { useState } from "react";
 import colors from "../styles/colors";
 import { useNavigation } from "@react-navigation/native";
-import { auth } from "../utils/firebase";
+import { auth, db } from "../utils/firebase";
 import { signInWithEmailAndPassword } from "firebase/auth";
+import {
+  addDoc,
+  collection,
+  doc,
+  onSnapshot,
+  setDoc,
+} from "firebase/firestore";
+import { useGlobalContext } from "../utils/context";
 
 const LoginScreen = () => {
+  const { events, updateEvents, registeredEvents, setRegisteredEvents } =
+    useGlobalContext();
   const navigation = useNavigation();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [errorMessage, setErrorMessage] = useState(false);
 
+  //Create user document listener on login
   const handleLogin = () => {
     signInWithEmailAndPassword(auth, email, password)
       .then((userCredential) => {
         // Signed in
-        const user = userCredential.user;
+        //OnSnapshot : listener, 2 parameters :
+        //Actual document listening to and function called when document changes(Join)
+        //Update in firebase -> update on phone
+        const unsubscribe = onSnapshot(
+          doc(db, "users", auth.currentUser.uid),
+          (snap) => {
+            // console.log("hello");
+            setRegisteredEvents(snap.data().registeredEvents);
+          }
+        );
         setErrorMessage(false);
         navigation.navigate("Feed");
       })
@@ -30,6 +50,7 @@ const LoginScreen = () => {
         const errorCode = error.code;
         const errorMessage = error.message;
         setErrorMessage(true);
+        // console.log(errorMessage);
       });
   };
   return (
